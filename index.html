@@ -1,0 +1,303 @@
+<html>
+
+	<head>
+
+
+		<script type="text/javascript" src="Three.js"></script>
+		<script type="text/javascript" src="THREEx.KeyboardState.js"></script>
+		<script type="text/javascript" src="THREEx.FullScreen.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+
+		<style>
+
+			body {
+				padding: 0px;
+			}
+
+		</style>
+
+		<script>
+
+		var p1score = 0;
+		var p2score = 0;
+
+		function updatescores(winner) {
+			if(winner==1) p1score++;
+			if(winner==2) p2score++;
+
+			$('#score').html(p1score + ":" + p2score);
+		}
+
+		</script>
+
+	</head>
+
+	<body> 
+	<div id="score"></div>
+
+		<b>p1 controls:</b> w&s <b>p2 controls:</b> p&l
+
+		<script>
+
+		    var camera, scene, renderer;
+		    var player1score = 0
+		    var player2score = 0
+		    var keyboard;
+		    var started = 0;
+		    var p1up = 'w';
+	       	var p1down = 's';
+	       	var p2up = 'p';
+	       	var p2down = 'l';
+	       	var start = 'c'; // this will start the ball movement :)
+
+			var ballnum = 3; // fix this too
+
+	       	var ballmat, ballgeo;
+	       	var p1mat, p1geo;
+	       	var p2mat, p2geo;
+	       	var limitmat, limitgeo;
+
+	       	var paddles = paddles || [];
+	       	var balls = balls || [];
+	       	var limit;
+
+	       	var ballsx = ballsx || [];
+			var ballsy = ballsy || [];
+
+			var ballscaley = 20;
+			var ballscalez = 20;
+			var ballscalex = 20;
+
+			var pad1scaley = 200;
+			var pad1scalex = 50;
+			var pad1scalez = 100;
+
+			var pad2scaley = 200;
+			var pad2scalex = 50;
+			var pad2scalez = 100; //needa array this
+
+			var particles;
+
+				if(Math.random()*100>50) {
+					ballsx[0] = 15;
+					ballsx[1] = -20;
+					ballsx[2] = 2; 
+
+				} else { // and all this
+
+					ballsx[0] = -20;
+					ballsx[1] = -15;
+					ballsx[2] = 9;
+				}
+
+			ballsy[0] = 0;
+			ballsy[1] = 0;
+			ballsy[2] = 0;
+
+	       	var initrender = 0;
+
+		    init();
+		    animate();
+
+		    function init() {
+
+		        scene = new THREE.Scene();
+
+		        keyboard = new THREEx.KeyboardState();
+
+		        camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 1, 10000 );
+		        camera.position.z = 1000;
+		        scene.add( camera );
+
+		        ballgeo = new THREE.CubeGeometry( ballscalex, ballscaley, ballscalez );
+		        ballmat = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
+		        var ballmat2 = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
+		        var ballmat3 = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
+		        p1geo = new THREE.CubeGeometry( pad1scalex, pad1scaley, pad1scalez );
+		        p1mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
+
+		        p2geo = new THREE.CubeGeometry( pad2scalex, pad2scaley, pad2scalez );
+		        p2mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
+
+		        limitgeo = new THREE.CubeGeometry( 3200, 1700, 1 );
+		        limitmat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
+
+		        limit = new THREE.Mesh( limitgeo, limitmat );
+
+		        var tmp = new THREE.Mesh( ballgeo, ballmat );
+
+		        balls.push(tmp);
+
+		        tmp = new THREE.Mesh( ballgeo, ballmat2 );
+
+		       balls.push(tmp);
+
+		       tmp = new THREE.Mesh( ballgeo, ballmat3 );
+
+		       balls.push(tmp);
+
+		        tmp = new THREE.Mesh( p1geo, p1mat );
+
+		        paddles.push(tmp);
+
+		        tmp = new THREE.Mesh( p2geo, p2mat );
+
+		        paddles.push(tmp);
+
+		        scene.add( limit );
+
+		        for(var i = 0; i < balls.length; i++) {
+		        	scene.add(balls[i]);
+		        }
+
+		        for(var i = 0; i < paddles.length; i++) {
+		        	scene.add(paddles[i]);
+		        }		        
+
+		        renderer = new THREE.CanvasRenderer();
+		        renderer.setSize( window.innerWidth, window.innerHeight );
+
+		        document.body.appendChild( renderer.domElement );
+
+		    }
+
+		    function animate() {
+
+		        requestAnimationFrame( animate );
+		        render();
+
+		    }
+
+		    function render() {
+
+		    	if(!initrender) {
+		    		paddles[0].position.x -= 1000;
+		    		paddles[1].position.x += 1000;
+
+		    		for(var i = 0; i < balls.length; i++)
+		    			for(var j = 0; j < paddles.length; j++)
+		    				balls[i].position.z = paddles[j].position.z;
+
+		    		//limit.position.z -= 200;
+		    		initrender = 1;
+		    	}
+
+		       // MOVE BALLS
+
+		       if(started==1) {
+
+				       for(var i = 0; i < balls.length; i++) {
+				       		balls[i].position.x += ballsx[i];
+		    				balls[i].position.y += ballsy[i];
+				       
+
+						       // CHECK FOR SIDE COLLISION
+
+								if(balls[i].position.y>700) {
+									console.log('hit top')
+									balls[i].position.y = 700;
+									ballsy[i] *= -1;
+								}
+
+								if(balls[i].position.y<-690) {
+									console.log('hit bottom');
+									balls[i].position.y = -690;
+									ballsy[i] *= -1;
+								}
+
+						       	if(balls[i].position.x <= -1500){ //ball hits the padlle 1 wall
+							       	balls[i].position.y = 0;
+							       	balls[i].position.x = 0;
+							       	started = 0;
+							       	player2score += 1;
+							       	updatescores(2);
+						       	}
+
+						        if(balls[i].position.x >= 1500){ //ball hits the padlle 2 wall
+							       	balls[i].position.y = 0;
+							       	balls[i].position.x = 0;
+							       	started = 0;
+							       	player1score += 1;
+							       	updatescores(1);
+				       			}
+				       
+
+				       		for(var j = 0; j < paddles.length; j++) {
+
+				       			if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles[j].position.y + (pad1scaley / 2))) {
+							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles[j].position.y - (pad1scaley / 2)))) {
+							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles[j].position.x - (pad1scalex / 2))){
+							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles[j].position.x + (pad1scalex / 2))){
+
+							                         		ballsx[i] *= -1 ;
+							                                ballsy[i] += ((balls[i].position.y) - (paddles[j].position.y)) * .1; 
+
+
+							                         			if(balls[i].position.y + (ballscaley / 2) > paddles[j].position.y + (pad1scaley / 2)){
+
+							                         			}
+
+													}
+											}
+									}
+								}
+
+
+				       		}
+
+				       	}
+						
+
+
+
+
+
+				       // player 1 (left) controls
+
+				       if(keyboard.pressed(p1up)) {
+				       		if(paddles[0].position.y<700)
+				       			paddles[0].position.y += 15;
+				       }
+				       if(keyboard.pressed(p1down)) {
+				       		if(paddles[0].position.y>=-690)
+				       			paddles[0].position.y -= 15;
+				       }
+
+				       // player 2 (right controls)
+
+				       if(keyboard.pressed(p2up)) {
+				       		if(paddles[1].position.y<700)
+				       			paddles[1].position.y += 15;
+				       }
+				       if(keyboard.pressed(p2down)) {
+				       		if(paddles[1].position.y>-695)
+				       			paddles[1].position.y -= 15;
+				       }
+
+				} else if(keyboard.pressed('c')) {
+
+					started = 1;
+
+					for(var i = 0; i < balls.length; i++) {
+						balls[i].position.x = i*30;
+						balls[i].position.y = i*30;
+						ballsy[i] = 0;
+					}
+
+					for(var i = 0; i < paddles.length; i++) {
+						paddles[i].position.y  = 0;
+					}
+				}
+
+
+				renderer.render( scene, camera );
+
+		    }
+
+		</script>
+
+	</body>
+
+</html>
+
+
