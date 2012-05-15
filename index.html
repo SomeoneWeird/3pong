@@ -24,7 +24,6 @@
 		function updatescores(winner) {
 			if(winner==1) p1score++;
 			if(winner==2) p2score++;
-
 			$('#score').html(p1score + ":" + p2score);
 		}
 
@@ -35,8 +34,8 @@
 	<body> 
 		
 		3pong - Adam Brady/Scerri<br />
-		<a href="https://github.com/SomeoneWeird/3pong">https://github.com/SomeoneWeird/3pong</a>
-		<div id="score"></div>
+		<a href="https://github.com/SomeoneWeird/3pong">https://github.com/SomeoneWeird/3pong</a><br />
+		<div id="score">0:0</div>
 		<div id="controls"><b>p1 controls:</b> w&s <b>p2 controls:</b> p&l <b>start game:</b> c</div>
 
 		
@@ -172,7 +171,7 @@
 		        }		        
 
 		        renderer = new THREE.CanvasRenderer();
-		        renderer.setSize( window.innerWidth, window.innerHeight );
+		        renderer.setSize( window.innerWidth, window.innerHeight - 100 );
 
 		        document.body.appendChild( renderer.domElement );
 
