@@ -50,8 +50,8 @@
 	       	var p2down = 'l';
 	       	var start = 'c'; // this will start the ball movement :)
 
-			var ballnum = 3; // fix this too
-
+			var ballnum = 1; // fix this too
+			var currentballs = ballnum;
 	       	var ballmat, ballgeo;
 	       	var p1mat, p1geo;
 	       	var p2mat, p2geo;
@@ -68,36 +68,45 @@
 			var ballscalez = 20;
 			var ballscalex = 20;
 
-			var pad1scaley = 200;
+			var pad1scaley = 800;
 			var pad1scalex = 50;
 			var pad1scalez = 100;
 
-			var pad2scaley = 200;
+			var pad2scaley = 800;
 			var pad2scalex = 50;
-			var pad2scalez = 100; //needa array this
+			var pad2scalez = 100;
 
-			var particles;
+			var limitscaley = 1700;
+			var limitscalex = 3200;
+			var limitscalez = pad1scalez;
+
+			for(var i = 0; i < ballnum; i++) {
 
 				if(Math.random()*100>50) {
-					ballsx[0] = 15;
-					ballsx[1] = -20;
-					ballsx[2] = 2; 
+					ballsx[i] = Math.random()*30;
 
-				} else { // and all this
+				} else {
 
-					ballsx[0] = -20;
-					ballsx[1] = -15;
-					ballsx[2] = 9;
+					ballsx[i] = -(Math.random()*20);
 				}
 
-			ballsy[0] = 0;
-			ballsy[1] = 0;
-			ballsy[2] = 0;
+			
+				ballsy[i] = 0;
+			}
 
 	       	var initrender = 0;
 
 		    init();
 		    animate();
+
+		    function getStartPosY(from, to) {
+
+		    	var a = (Math.random()*500) - 250;
+
+		    	return a;
+		    	
+
+		    }
 
 		    function init() {
 
@@ -110,33 +119,32 @@
 		        scene.add( camera );
 
 		        ballgeo = new THREE.CubeGeometry( ballscalex, ballscaley, ballscalez );
-		        ballmat = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
-		        var ballmat2 = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
-		        var ballmat3 = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false } );
+
+		        for(var a = 0; a < ballnum; a++) {
+
+		        	ballmat = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false });
+
+					var tmp = new THREE.Mesh( ballgeo, ballmat );
+
+		        	balls.push(tmp);
+
+		        	balls[a].position.y = getStartPosY(-250, 250);
+
+		        }
+		        
+		        
 		        p1geo = new THREE.CubeGeometry( pad1scalex, pad1scaley, pad1scalez );
 		        p1mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
 
 		        p2geo = new THREE.CubeGeometry( pad2scalex, pad2scaley, pad2scalez );
 		        p2mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
 
-		        limitgeo = new THREE.CubeGeometry( 3200, 1700, 1 );
+		        limitgeo = new THREE.CubeGeometry( limitscalex, limitscaley, limitscalez );
 		        limitmat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
 
 		        limit = new THREE.Mesh( limitgeo, limitmat );
 
-		        var tmp = new THREE.Mesh( ballgeo, ballmat );
-
-		        balls.push(tmp);
-
-		        tmp = new THREE.Mesh( ballgeo, ballmat2 );
-
-		       balls.push(tmp);
-
-		       tmp = new THREE.Mesh( ballgeo, ballmat3 );
-
-		       balls.push(tmp);
-
-		        tmp = new THREE.Mesh( p1geo, p1mat );
+				var tmp = new THREE.Mesh( p1geo, p1mat );
 
 		        paddles.push(tmp);
 
@@ -189,34 +197,39 @@
 				       for(var i = 0; i < balls.length; i++) {
 				       		balls[i].position.x += ballsx[i];
 		    				balls[i].position.y += ballsy[i];
-				       
 
-						       // CHECK FOR SIDE COLLISION
 
-								if(balls[i].position.y>700) {
-									console.log('hit top')
-									balls[i].position.y = 700;
+								if((balls[i].position.y + (ballscaley /2)) > (limit.position.y + (limitscaley / 2))){
+
+									balls[i].position.y = (limit.position.y + (limitscaley / 2)) - 1;
 									ballsy[i] *= -1;
 								}
 
-								if(balls[i].position.y<-690) {
-									console.log('hit bottom');
-									balls[i].position.y = -690;
+								if((balls[i].position.y - (ballscaley /2)) < (limit.position.y - (limitscaley / 2))){
+
+									balls[i].position.y = (limit.position.y - (limitscaley / 2))+ 1;
 									ballsy[i] *= -1;
 								}
+							
 
-						       	if(balls[i].position.x <= -1500){ //ball hits the padlle 1 wall
+						       	if(balls[i].position.x <= (limit.position.x - (limitscalex / 2))){ //ball hits the padlle 1 wall
 							       	balls[i].position.y = 0;
 							       	balls[i].position.x = 0;
-							       	started = 0;
+							       	currentballs--;
+							       	if (currentballs == 0 ){
+							       		started = 0;
+							       	}
 							       	player2score += 1;
 							       	updatescores(2);
 						       	}
 
-						        if(balls[i].position.x >= 1500){ //ball hits the padlle 2 wall
+						        if(balls[i].position.x >= (limit.position.x + (limitscalex / 2))){ //ball hits the padlle 2 wall
 							       	balls[i].position.y = 0;
 							       	balls[i].position.x = 0;
-							       	started = 0;
+							       	currentballs--;
+							       	if (currentballs == 0 ){
+							       		started = 0;
+							       	}
 							       	player1score += 1;
 							       	updatescores(1);
 				       			}
@@ -277,16 +290,19 @@
 				} else if(keyboard.pressed('c')) {
 
 					started = 1;
+					currentballs = ballnum;
 
 					for(var i = 0; i < balls.length; i++) {
-						balls[i].position.x = i*30;
-						balls[i].position.y = i*30;
+
+						balls[i].position.x = 0;
+						balls[i].position.y = getStartPosY(-250, 250);
 						ballsy[i] = 0;
 					}
 
 					for(var i = 0; i < paddles.length; i++) {
 						paddles[i].position.y  = 0;
 					}
+
 				}
 
 
