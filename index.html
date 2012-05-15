@@ -33,9 +33,13 @@
 	</head>
 
 	<body> 
-	<div id="score"></div>
+		
+		3pong - Adam Brady/Scerri<br />
+		<a href="https://github.com/SomeoneWeird/3pong">https://github.com/SomeoneWeird/3pong</a>
+		<div id="score"></div>
+		<div id="controls"><b>p1 controls:</b> w&s <b>p2 controls:</b> p&l <b>start game:</b> c</div>
 
-		<b>p1 controls:</b> w&s <b>p2 controls:</b> p&l
+		
 
 		<script>
 
@@ -50,7 +54,7 @@
 	       	var p2down = 'l';
 	       	var start = 'c'; // this will start the ball movement :)
 
-			var ballnum = 1; // fix this too
+			var ballnum = 10; // fix this too
 			var currentballs = ballnum;
 	       	var ballmat, ballgeo;
 	       	var p1mat, p1geo;
@@ -205,8 +209,11 @@
 		       if(started==1) {
 
 				       for(var i = 0; i < balls.length; i++) {
-				       		balls[i].position.x += ballsx[i];
-		    				balls[i].position.y += ballsy[i];
+
+				       		if(!balls[i].dead) {
+					       		balls[i].position.x += ballsx[i];
+			    				balls[i].position.y += ballsy[i];
+			    			}
 
 
 								if((balls[i].position.y + (ballscaley /2)) > (limit.position.y + (limitscaley / 2))){
@@ -223,25 +230,29 @@
 							
 
 						       	if(balls[i].position.x <= (limit.position.x - (limitscalex / 2))){ //ball hits the padlle 1 wall
-							       	balls[i].position.y = 0;
-							       	balls[i].position.x = 0;
+							       	balls[i].position.y = limit.position.y*4;
+							       	balls[i].position.x = limit.position.x*4;
+							       	balls[i].dead = true;
+							       	ballsy[i] = 0;
 							       	currentballs--;
 							       	if (currentballs == 0 ){
 							       		started = 0;
-							       	}
-							       	player2score += 1;
-							       	updatescores(2);
+								       	player2score += 1;
+								       	updatescores(2);
+								    }
 						       	}
 
 						        if(balls[i].position.x >= (limit.position.x + (limitscalex / 2))){ //ball hits the padlle 2 wall
-							       	balls[i].position.y = 0;
-							       	balls[i].position.x = 0;
+							       	balls[i].position.y = limit.position.y*4;
+							       	balls[i].position.x = limit.position.x*4;
+							       	balls[i].dead = true;
+							       	ballsy[i] = 0;
 							       	currentballs--;
 							       	if (currentballs == 0 ){
 							       		started = 0;
-							       	}
-							       	player1score += 1;
-							       	updatescores(1);
+								       	player1score += 1;
+								       	updatescores(1);
+								    }
 				       			}
 				       
 
@@ -338,7 +349,9 @@
 
 						balls[i].position.x = 0;
 						balls[i].position.y = getStartPosY(-250, 250);
+						balls[i].dead = false;
 						ballsy[i] = 0;
+
 					}
 
 					for(var i = 0; i < paddles1.length; i++) {
