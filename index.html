@@ -57,7 +57,8 @@
 	       	var p2mat, p2geo;
 	       	var limitmat, limitgeo;
 
-	       	var paddles = paddles || [];
+	       	var paddles1 = paddles1 || [];
+	       	var paddles2 = paddles2 || [];
 	       	var balls = balls || [];
 	       	var limit;
 
@@ -114,7 +115,7 @@
 
 		        keyboard = new THREEx.KeyboardState();
 
-		        camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 1, 10000 );
+		        camera = new THREE.PerspectiveCamera( 95, window.innerWidth / window.innerHeight, 1, 10000 );
 		        camera.position.z = 1000;
 		        scene.add( camera );
 
@@ -146,11 +147,11 @@
 
 				var tmp = new THREE.Mesh( p1geo, p1mat );
 
-		        paddles.push(tmp);
+		        paddles1.push(tmp);
 
 		        tmp = new THREE.Mesh( p2geo, p2mat );
 
-		        paddles.push(tmp);
+		        paddles2.push(tmp);
 
 		        scene.add( limit );
 
@@ -158,8 +159,12 @@
 		        	scene.add(balls[i]);
 		        }
 
-		        for(var i = 0; i < paddles.length; i++) {
-		        	scene.add(paddles[i]);
+		        for(var i = 0; i < paddles1.length; i++) {
+		        	scene.add(paddles1[i]);
+		        }	
+
+		        for(var i = 0; i < paddles2.length; i++) {
+		        	scene.add(paddles2[i]);
 		        }		        
 
 		        renderer = new THREE.CanvasRenderer();
@@ -179,12 +184,17 @@
 		    function render() {
 
 		    	if(!initrender) {
-		    		paddles[0].position.x -= 1000;
-		    		paddles[1].position.x += 1000;
 
+		    		for(var i = 0; i < paddles1.length; i++) {
+		    			paddles1[i].position.x -= 1000;
+		    		}
+
+		    		for(var i = 0; i < paddles2.length; i++) {
+		    			paddles2[i].position.x += 1000;
+		    		}
+		    		
 		    		for(var i = 0; i < balls.length; i++)
-		    			for(var j = 0; j < paddles.length; j++)
-		    				balls[i].position.z = paddles[j].position.z;
+		    				balls[i].position.z = limit.position.z;
 
 		    		//limit.position.z -= 200;
 		    		initrender = 1;
@@ -235,18 +245,36 @@
 				       			}
 				       
 
-				       		for(var j = 0; j < paddles.length; j++) {
+				       		for(var j = 0; j < paddles1.length; j++) {
 
-				       			if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles[j].position.y + (pad1scaley / 2))) {
-							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles[j].position.y - (pad1scaley / 2)))) {
-							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles[j].position.x - (pad1scalex / 2))){
-							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles[j].position.x + (pad1scalex / 2))){
+				       			if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles1[j].position.y + (pad1scaley / 2))) {
+							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles1[j].position.y - (pad1scaley / 2)))) {
+							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles1[j].position.x - (pad1scalex / 2))){
+							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles1[j].position.x + (pad1scalex / 2))){
 
 							                         		ballsx[i] *= -1 ;
-							                                ballsy[i] += ((balls[i].position.y) - (paddles[j].position.y)) * .1; 
+							                                ballsy[i] += ((balls[i].position.y) - (paddles1[j].position.y)) * .1; 
 
 
-							                         			if(balls[i].position.y + (ballscaley / 2) > paddles[j].position.y + (pad1scaley / 2)){
+							                         			if(balls[i].position.y + (ballscaley / 2) > paddles1[j].position.y + (pad1scaley / 2)){
+
+							                         			}
+
+													}
+											}
+									}
+								}
+
+								if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles2[j].position.y + (pad2scaley / 2))) {
+							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles2[j].position.y - (pad2scaley / 2)))) {
+							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles2[j].position.x - (pad2scalex / 2))){
+							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles2[j].position.x + (pad2scalex / 2))){
+
+							                         		ballsx[i] *= -1 ;
+							                                ballsy[i] += ((balls[i].position.y) - (paddles2[j].position.y)) * .1; 
+
+
+							                         			if(balls[i].position.y + (ballscaley / 2) > paddles2[j].position.y + (pad2scaley / 2)){
 
 							                         			}
 
@@ -268,23 +296,37 @@
 				       // player 1 (left) controls
 
 				       if(keyboard.pressed(p1up)) {
-				       		if(paddles[0].position.y<700)
-				       			paddles[0].position.y += 15;
+
+				       		for(var i = 0; i < paddles1.length; i++) {
+				       			if(paddles1[i].position.y<700)
+				       				paddles1[i].position.y += 15;
+				       		}
+				       		
 				       }
 				       if(keyboard.pressed(p1down)) {
-				       		if(paddles[0].position.y>=-690)
-				       			paddles[0].position.y -= 15;
+				       		
+				       		for(var i = 0; i < paddles1.length; i++) {
+				       			if(paddles1[i].position.y>=-690)
+				       				paddles1[i].position.y -= 15;
+				       		}
 				       }
 
 				       // player 2 (right controls)
 
 				       if(keyboard.pressed(p2up)) {
-				       		if(paddles[1].position.y<700)
-				       			paddles[1].position.y += 15;
+
+				       		for(var i = 0; i < paddles2.length; i++) {
+				       			if(paddles2[i].position.y<700)
+				       				paddles2[i].position.y += 15;
+				       		}
+				       		
 				       }
 				       if(keyboard.pressed(p2down)) {
-				       		if(paddles[1].position.y>-695)
-				       			paddles[1].position.y -= 15;
+
+					       	for(var i = 0; i < paddles2.length; i++) {
+					       			if(paddles2[i].position.y>-695)
+				       					paddles2[i].position.y -= 15;
+					       	}
 				       }
 
 				} else if(keyboard.pressed('c')) {
@@ -299,8 +341,11 @@
 						ballsy[i] = 0;
 					}
 
-					for(var i = 0; i < paddles.length; i++) {
-						paddles[i].position.y  = 0;
+					for(var i = 0; i < paddles1.length; i++) {
+						paddles1[i].position.y  = 0;
+					}
+					for(var i = 0; i < paddles2.length; i++) {
+						paddles2[i].position.y  = 0;
 					}
 
 				}
