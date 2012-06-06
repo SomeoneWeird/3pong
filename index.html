@@ -1,376 +1,318 @@
 <html>
 
-	<head>
+        <head>
 
 
-		<script type="text/javascript" src="Three.js"></script>
-		<script type="text/javascript" src="THREEx.KeyboardState.js"></script>
-		<script type="text/javascript" src="THREEx.FullScreen.js"></script>
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+                <script type="text/javascript" src="Three.js"></script>
+                <script type="text/javascript" src="THREEx.KeyboardState.js"></script>
+                <script type="text/javascript" src="THREEx.FullScreen.js"></script>
+                <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
-		<style>
+                <style>
 
-			body {
-				padding: 0px;
-			}
+                        body {
+                                padding: 0px;
+                        }
 
-		</style>
+                </style>
 
-		<script>
+                <script>
 
-		var p1score = 0;
-		var p2score = 0;
+                var p1score = 0;
+                var p2score = 0;
 
-		function updatescores(winner) {
-			if(winner==1) p1score++;
-			if(winner==2) p2score++;
-			$('#score').html(p1score + ":" + p2score);
-		}
+                function updatescores(winner) {
+                        if(winner==1) p1score++;
+                        if(winner==2) p2score++;
+                        $('#score').html(p1score + ":" + p2score);
+                }
 
-		</script>
+                </script>
 
-	</head>
+        </head>
 
-	<body> 
-		
-		3pong - Adam Brady/Scerri<br />
-		<a href="https://github.com/SomeoneWeird/3pong">https://github.com/SomeoneWeird/3pong</a><br />
-		<div id="score">0:0</div>
-		<div id="controls"><b>p1 controls:</b> w&s <b>p2 controls:</b> p&l <b>start game:</b> c</div>
+        <body> 
+                
+                3pong - Adam Brady/Scerri<br />
+                <a href="https://github.com/SomeoneWeird/3pong">https://github.com/SomeoneWeird/3pong</a><br />
+                <div id="score">0:0</div>
+                <div id="controls"><b>p1 controls:</b> w&s <b>p2 controls:</b> p&l <b>start game:</b> c</div>
+
+                
 
-		
+                <script>
+
+                    var camera, scene, renderer;
+                    var player1score = 0
+                    var player2score = 0
+                    var keyboard;
+                    var started = 0;
+                    var p1up = 'w';
+                    var p1down = 's';
+                    var p2up = 'p';
+                    var p2down = 'l';
+                    var start = 'c';
 
-		<script>
+                    var ballnum = 2;
+                    var currentballs = ballnum;
+                    var ballmat, ballgeo;
+                    var p1mat, p1geo;
+                    var p2mat, p2geo;
+                    var limitmat, limitgeo;
 
-		    var camera, scene, renderer;
-		    var player1score = 0
-		    var player2score = 0
-		    var keyboard;
-		    var started = 0;
-		    var p1up = 'w';
-	       	var p1down = 's';
-	       	var p2up = 'p';
-	       	var p2down = 'l';
-	       	var start = 'c'; // this will start the ball movement :)
+                    var paddles1 = paddles1 || [];
+                    var paddles2 = paddles2 || [];
+                    var balls = balls || [];
+                    var limit;
 
-			var ballnum = 10; // fix this too
-			var currentballs = ballnum;
-	       	var ballmat, ballgeo;
-	       	var p1mat, p1geo;
-	       	var p2mat, p2geo;
-	       	var limitmat, limitgeo;
 
-	       	var paddles1 = paddles1 || [];
-	       	var paddles2 = paddles2 || [];
-	       	var balls = balls || [];
-	       	var limit;
+                    var ballsx = ballsx || [];
+                    var ballsy = ballsy || [];
 
-	       	var ballsx = ballsx || [];
-			var ballsy = ballsy || [];
+                    var ballscaley = 20;
+                    var ballscalex = 20;
+                    var ballscalez = 20;
 
-			var ballscaley = 20;
-			var ballscalez = 20;
-			var ballscalex = 20;
+                    var pad1scaley = 500;
+                    var pad1scalex = 50;
+                    var pad1scalez = 100;
 
-			var pad1scaley = 800;
-			var pad1scalex = 50;
-			var pad1scalez = 100;
-
-			var pad2scaley = 800;
-			var pad2scalex = 50;
-			var pad2scalez = 100;
-
-			var limitscaley = 1700;
-			var limitscalex = 3200;
-			var limitscalez = pad1scalez;
-
-			for(var i = 0; i < ballnum; i++) {
-
-				if(Math.random()*100>50) {
-					ballsx[i] = Math.random()*30;
-
-				} else {
-
-					ballsx[i] = -(Math.random()*20);
-				}
-
-			
-				ballsy[i] = 0;
-			}
-
-	       	var initrender = 0;
-
-		    init();
-		    animate();
-
-		    function getStartPosY(from, to) {
-
-		    	var a = (Math.random()*500) - 250;
-
-		    	return a;
-		    	
-
-		    }
-
-		    function init() {
-
-		        scene = new THREE.Scene();
-
-		        keyboard = new THREEx.KeyboardState();
-
-		        camera = new THREE.PerspectiveCamera( 95, window.innerWidth / window.innerHeight, 1, 10000 );
-		        camera.position.z = 1000;
-		        scene.add( camera );
-
-		        ballgeo = new THREE.CubeGeometry( ballscalex, ballscaley, ballscalez );
-
-		        for(var a = 0; a < ballnum; a++) {
-
-		        	ballmat = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false });
-
-					var tmp = new THREE.Mesh( ballgeo, ballmat );
-
-		        	balls.push(tmp);
-
-		        	balls[a].position.y = getStartPosY(-250, 250);
-
-		        }
-		        
-		        
-		        p1geo = new THREE.CubeGeometry( pad1scalex, pad1scaley, pad1scalez );
-		        p1mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
-
-		        p2geo = new THREE.CubeGeometry( pad2scalex, pad2scaley, pad2scalez );
-		        p2mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
-
-		        limitgeo = new THREE.CubeGeometry( limitscalex, limitscaley, limitscalez );
-		        limitmat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
-
-		        limit = new THREE.Mesh( limitgeo, limitmat );
-
-				var tmp = new THREE.Mesh( p1geo, p1mat );
-
-		        paddles1.push(tmp);
-
-		        tmp = new THREE.Mesh( p2geo, p2mat );
-
-		        paddles2.push(tmp);
-
-		        scene.add( limit );
-
-		        for(var i = 0; i < balls.length; i++) {
-		        	scene.add(balls[i]);
-		        }
-
-		        for(var i = 0; i < paddles1.length; i++) {
-		        	scene.add(paddles1[i]);
-		        }	
-
-		        for(var i = 0; i < paddles2.length; i++) {
-		        	scene.add(paddles2[i]);
-		        }		        
-
-		        renderer = new THREE.CanvasRenderer();
-		        renderer.setSize( window.innerWidth, window.innerHeight - 100 );
-
-		        document.body.appendChild( renderer.domElement );
-
-		    }
-
-		    function animate() {
-
-		        requestAnimationFrame( animate );
-		        render();
-
-		    }
-
-		    function render() {
-
-		    	if(!initrender) {
-
-		    		for(var i = 0; i < paddles1.length; i++) {
-		    			paddles1[i].position.x -= 1000;
-		    		}
-
-		    		for(var i = 0; i < paddles2.length; i++) {
-		    			paddles2[i].position.x += 1000;
-		    		}
-		    		
-		    		for(var i = 0; i < balls.length; i++)
-		    				balls[i].position.z = limit.position.z;
-
-		    		//limit.position.z -= 200;
-		    		initrender = 1;
-		    	}
-
-		       // MOVE BALLS
-
-		       if(started==1) {
-
-				       for(var i = 0; i < balls.length; i++) {
-
-				       		if(!balls[i].dead) {
-					       		balls[i].position.x += ballsx[i];
-			    				balls[i].position.y += ballsy[i];
-			    			}
-
-
-								if((balls[i].position.y + (ballscaley /2)) > (limit.position.y + (limitscaley / 2))){
-
-									balls[i].position.y = (limit.position.y + (limitscaley / 2)) - 1;
-									ballsy[i] *= -1;
-								}
-
-								if((balls[i].position.y - (ballscaley /2)) < (limit.position.y - (limitscaley / 2))){
-
-									balls[i].position.y = (limit.position.y - (limitscaley / 2))+ 1;
-									ballsy[i] *= -1;
-								}
-							
-
-						       	if(balls[i].position.x <= (limit.position.x - (limitscalex / 2))){ //ball hits the padlle 1 wall
-							       	balls[i].position.y = limit.position.y*4;
-							       	balls[i].position.x = limit.position.x*4;
-							       	balls[i].dead = true;
-							       	ballsy[i] = 0;
-							       	currentballs--;
-							       	if (currentballs == 0 ){
-							       		started = 0;
-								       	player2score += 1;
-								       	updatescores(2);
-								    }
-						       	}
-
-						        if(balls[i].position.x >= (limit.position.x + (limitscalex / 2))){ //ball hits the padlle 2 wall
-							       	balls[i].position.y = limit.position.y*4;
-							       	balls[i].position.x = limit.position.x*4;
-							       	balls[i].dead = true;
-							       	ballsy[i] = 0;
-							       	currentballs--;
-							       	if (currentballs == 0 ){
-							       		started = 0;
-								       	player1score += 1;
-								       	updatescores(1);
-								    }
-				       			}
-				       
-
-				       		for(var j = 0; j < paddles1.length; j++) {
-
-				       			if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles1[j].position.y + (pad1scaley / 2))) {
-							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles1[j].position.y - (pad1scaley / 2)))) {
-							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles1[j].position.x - (pad1scalex / 2))){
-							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles1[j].position.x + (pad1scalex / 2))){
-
-							                         		ballsx[i] *= -1 ;
-							                                ballsy[i] += ((balls[i].position.y) - (paddles1[j].position.y)) * .1; 
-
-
-							                         			if(balls[i].position.y + (ballscaley / 2) > paddles1[j].position.y + (pad1scaley / 2)){
-
-							                         			}
-
-													}
-											}
-									}
-								}
-
-								if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles2[j].position.y + (pad2scaley / 2))) {
-							        if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles2[j].position.y - (pad2scaley / 2)))) {
-							                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles2[j].position.x - (pad2scalex / 2))){
-							                         if ((balls[i].position.x - (ballscalex / 2)) <= (paddles2[j].position.x + (pad2scalex / 2))){
-
-							                         		ballsx[i] *= -1 ;
-							                                ballsy[i] += ((balls[i].position.y) - (paddles2[j].position.y)) * .1; 
-
-
-							                         			if(balls[i].position.y + (ballscaley / 2) > paddles2[j].position.y + (pad2scaley / 2)){
-
-							                         			}
-
-													}
-											}
-									}
-								}
-
-
-				       		}
-
-				       	}
-						
-
-
-
-
-
-				       // player 1 (left) controls
-
-				       if(keyboard.pressed(p1up)) {
-
-				       		for(var i = 0; i < paddles1.length; i++) {
-				       			if(paddles1[i].position.y<700)
-				       				paddles1[i].position.y += 15;
-				       		}
-				       		
-				       }
-				       if(keyboard.pressed(p1down)) {
-				       		
-				       		for(var i = 0; i < paddles1.length; i++) {
-				       			if(paddles1[i].position.y>=-690)
-				       				paddles1[i].position.y -= 15;
-				       		}
-				       }
-
-				       // player 2 (right controls)
-
-				       if(keyboard.pressed(p2up)) {
-
-				       		for(var i = 0; i < paddles2.length; i++) {
-				       			if(paddles2[i].position.y<700)
-				       				paddles2[i].position.y += 15;
-				       		}
-				       		
-				       }
-				       if(keyboard.pressed(p2down)) {
-
-					       	for(var i = 0; i < paddles2.length; i++) {
-					       			if(paddles2[i].position.y>-695)
-				       					paddles2[i].position.y -= 15;
-					       	}
-				       }
-
-				} else if(keyboard.pressed('c')) {
-
-					started = 1;
-					currentballs = ballnum;
-
-					for(var i = 0; i < balls.length; i++) {
-
-						balls[i].position.x = 0;
-						balls[i].position.y = getStartPosY(-250, 250);
-						balls[i].dead = false;
-						ballsy[i] = 0;
-
-					}
-
-					for(var i = 0; i < paddles1.length; i++) {
-						paddles1[i].position.y  = 0;
-					}
-					for(var i = 0; i < paddles2.length; i++) {
-						paddles2[i].position.y  = 0;
-					}
-
-				}
-
-
-				renderer.render( scene, camera );
-
-		    }
-
-		</script>
-
-	</body>
-
+                    var pad2scaley = 500;
+                    var pad2scalex = 50;
+                    var pad2scalez = 100;
+
+                    var limitscaley = 2000;
+                    var limitscalex = 3400;
+                    var limitscalez = 100;
+
+                    var pad2movey = pad2movey || [];
+                    var pad1movey = pad1movey || [];
+
+                    for(var i = 0; i < ballnum; i++) {
+
+                        if(Math.random()*100>50) {
+                                ballsx[i] = Math.random()*30;
+
+                        } else {
+
+                                ballsx[i] = -(Math.random()*20);
+                        }
+
+
+                        ballsy[i] = 0;
+                    }
+
+                    var initrender = 0;
+
+                    init();
+                    animate();
+
+                    function getStartPosY() {
+                            var a = (Math.random()*500) - 250;
+                            return a;
+                    }
+
+                    function init() {
+
+                        scene = new THREE.Scene();
+                        keyboard = new THREEx.KeyboardState();
+                        camera = new THREE.PerspectiveCamera( 105, window.innerWidth / window.innerHeight, 1, 10000 );
+                        camera.position.z = 1000;
+                        scene.add( camera );
+                        ballgeo = new THREE.CubeGeometry( ballscalex, ballscaley, ballscalez );
+                        for(var a = 0; a < ballnum; a++) {
+                                ballmat = new THREE.MeshBasicMaterial( { color: "0x"+Math.floor(Math.random()*16777215).toString(16), wireframe: false });
+                                var tmp = new THREE.Mesh( ballgeo, ballmat );
+                                balls.push(tmp);
+                                balls[a].position.y = getStartPosY(-250, 250);
+                        }
+                        p1geo = new THREE.CubeGeometry( pad1scalex, pad1scaley, pad1scalez );
+                        p1mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
+                        p2geo = new THREE.CubeGeometry( pad2scalex, pad2scaley, pad2scalez );
+                        p2mat = new THREE.MeshBasicMaterial( { color: 0xff0000 } )
+                        limitgeo = new THREE.CubeGeometry( limitscalex, limitscaley, limitscalez );
+                        limitmat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
+                        limit = new THREE.Mesh( limitgeo, limitmat );
+                        var tmp = new THREE.Mesh( p1geo, p1mat );
+                        paddles1.push(tmp);
+                        tmp = new THREE.Mesh( p2geo, p2mat );
+                        paddles2.push(tmp);
+                        scene.add( limit );
+
+                        for(var i = 0; i < balls.length; i++) {
+                                scene.add(balls[i]);
+                        }
+
+                        for(var i = 0; i < paddles1.length; i++) {
+                                scene.add(paddles1[i]);
+                        }        
+
+                        for(var i = 0; i < paddles2.length; i++) {
+                                scene.add(paddles2[i]);
+                        }                        
+
+                        renderer = new THREE.CanvasRenderer();
+                        renderer.setSize( window.innerWidth, window.innerHeight - 100 );
+                        document.body.appendChild( renderer.domElement );
+
+                    }
+
+                    function animate() {
+                        requestAnimationFrame( animate );
+                        render();
+                    }
+
+                    function render() {
+
+                            if(!initrender) {
+
+                                    for(var i = 0; i < paddles1.length; i++) {
+                                            paddles1[i].position.x -= 1500;
+                                    }
+                                    for(var i = 0; i < paddles2.length; i++) {
+                                            paddles2[i].position.x += 1500;
+                                    }
+                                    initrender = 1;
+                            }
+
+                            if(started==1) {
+                                for(var m = 0, xx = 0; m < balls.length; m++) {
+                                    if(balls[m].position.x >balls[xx].position.x){
+                                        if (ballsx[m] > (-limitscaley + 200)){
+                                            if (ballsx[m] > 0){
+                                                xx = m;
+                                            }
+                                        }
+                                    }                                                                                                                        
+                                }
+                                        
+                                for(var n = 0; n < paddles2.length; n++) {
+                                    if(balls[xx].position.y > paddles2[n].position.y +20){
+                                        pad2movey[n] = 20;
+                                        paddles2[n].position.y += pad2movey[n];
+                                        if ((paddles2[n].position.y + (pad2scaley / 2)) > (limit.position.y + (limitscaley / 2))){
+                                                paddles2[n].position.y = (limit.position.y + (limitscaley / 2)) - (pad2scaley / 2);
+                                        }
+                                    } else if (balls[xx].position.y < paddles2[n].position.y -20){
+                                        pad2movey[n] = -20;
+                                        paddles2[n].position.y += pad2movey[n];
+                                        if ((paddles2[n].position.y - (pad2scaley / 2)) < (limit.position.y - (limitscaley / 2))){
+                                                paddles2[n].position.y = (limit.position.y - (limitscaley / 2)) + (pad2scaley / 2);
+                                        }
+                                    }
+                                }
+                                for(var i = 0; i < balls.length; i++) {
+                                    if(!balls[i].dead) {
+                                        balls[i].position.x += ballsx[i];
+                                        balls[i].position.y += ballsy[i];
+                                    }
+                                    if((balls[i].position.y + (ballscaley /2)) > (limit.position.y + (limitscaley / 2))){
+                                            if (!balls[i].dead){
+                                                    balls[i].position.y = (limit.position.y + (limitscaley / 2)) - (ballscaley / 2) - 1
+                                                    ballsy[i] *= -1;
+                                            }
+                                    }
+                                    if((balls[i].position.y - (ballscaley /2)) < (limit.position.y - (limitscaley / 2))){
+                                            if (!balls[i].dead){
+                                                    balls[i].position.y = (limit.position.y - (limitscaley / 2)) + (ballscaley / 2) - 1
+                                                    ballsy[i] *= -1;
+                                            }
+                                    }
+                                    if(balls[i].position.x <= (limit.position.x - (limitscalex / 2))){
+                                        if (!balls[i].dead){
+                                            currentballs--;
+                                        }
+                                        balls[i].dead = true;
+                                        balls[i].position.y = -6000;
+                                        balls[i].position.x = -15000 - ((ballnum-currentballs)*30);
+                                        balls[i].position.z = (ballnum-currentballs)*10;
+                                        ballsy[i] = 0;
+                                        if (currentballs == 0 ){
+                                            started = 0;
+                                            player2score += 1;
+                                            updatescores(2);
+                                        }
+                                    }
+                                    if(balls[i].position.x >= (limit.position.x + (limitscalex / 2))){
+                                        if (!balls[i].dead){
+                                            currentballs--;
+                                        }
+                                        balls[i].dead = true;
+                                        balls[i].position.y = -6000;
+                                        balls[i].position.x = -15000 - ((ballnum-currentballs)*30);
+                                        balls[i].position.z = (ballnum-currentballs)*5;
+                                        ballsy[i] = 0;
+                                        if (currentballs == 0 ){
+                                            started = 0;
+                                            player1score += 1;
+                                            updatescores(1);
+                                        }
+                                    }
+                                    for(var j = 0; j < paddles1.length; j++) {
+                                        if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles1[j].position.y + (pad1scaley / 2))) {
+                                            if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles1[j].position.y - (pad1scaley / 2)))) {
+                                                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles1[j].position.x - (pad1scalex / 2))){
+                                                    if ((balls[i].position.x - (ballscalex / 2)) <= (paddles1[j].position.x + (pad1scalex / 2))){
+                                                        ballsx[i] *= -1 ;
+                                                        ballsy[i] += ((balls[i].position.y) - (paddles1[j].position.y)) * .1; 
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if ( (balls[i].position.y - (ballscaley / 2)) <= ( paddles2[j].position.y + (pad2scaley / 2))) {
+                                            if ((balls[i].position.y + (ballscaley / 2)) >= (( paddles2[j].position.y - (pad2scaley / 2)))) {
+                                                if ((balls[i].position.x + (ballscalex / 2)) >= (paddles2[j].position.x - (pad2scalex / 2))){
+                                                    if ((balls[i].position.x - (ballscalex / 2)) <= (paddles2[j].position.x + (pad2scalex / 2))){
+                                                        ballsx[i] *= -1 ;
+                                                        ballsy[i] += ((balls[i].position.y) - (paddles2[j].position.y)) * .1; 
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(keyboard.pressed(p1up)) {
+                                    for(var i = 0; i < paddles1.length; i++) {
+                                        if((paddles1[i].position.y + (pad1scaley / 2)) < (limitscaley / 2)){
+                                            pad1movey[i] = 15;
+                                            paddles1[i].position.y += pad1movey[i];
+                                        } else if ((paddles1[i].position.y - ((pad1scaley / 2)) > (limitscaley / 2))) { 
+                                            paddles1[i].position.y = (limitscaley / 2);
+                                        }
+                                   }              
+                                }
+                                if(keyboard.pressed(p1down)) {
+                                    for(var i = 0; i < paddles1.length; i++) {
+                                        if((paddles1[i].position.y - (pad1scaley / 2)) > (-limitscaley / 2)){
+                                            pad1movey[i] = -15;
+                                            paddles1[i].position.y += pad1movey[i];
+                                        } else if ((paddles1[i].position.y - ((pad1scaley / 2)) < (-limitscaley / 2))) { 
+                                            paddles1[i].position.y = -(limitscaley / 2);
+                                        }
+                                    }
+                                }
+                            } else if(keyboard.pressed('c')) {
+                                    started = 1;
+                                    currentballs = ballnum;
+                                    for(var i = 0; i < balls.length; i++) {
+                                        balls[i].position.x = 0;
+                                        balls[i].position.y = getStartPosY();
+                                        balls[i].position.z = ballscalez;
+                                        balls[i].dead = false;
+                                        ballsy[i] = 0;
+                                    }
+                                    for(var i = 0; i < paddles1.length; i++) {
+                                        paddles1[i].position.y  = 0;
+                                    }
+                                    for(var i = 0; i < paddles2.length; i++) {
+                                        paddles2[i].position.y  = 0;
+                                    }
+                                    for(var i = 0; i < ballnum; i++) {
+                                        ballsy[i] = 0;
+                                    }
+                            }
+                            renderer.render( scene, camera );
+                    }
+                </script>
+        </body>
 </html>
-
-
